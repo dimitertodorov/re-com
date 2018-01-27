@@ -46,7 +46,7 @@
   ([pred date period]
    (if (pred date)
     date
-   (recur pred (minus date period) period))))
+    (recur pred (minus date period) period))))
 
 (defn- =date [date1 date2]
   (and
@@ -85,6 +85,7 @@
   [table-div hide-border? class style attr]
   ;;extra h-box is currently necessary so that calendar & border do not strecth to width of any containing v-box
   [h-box
+   :class    "rc-datepicker-wrapper"
    :children [[border
                :radius "4px"
                :size   "none"
@@ -96,7 +97,7 @@
                            ;; override position from css because we are inline
                            :style (merge {:font-size "13px"
                                           :position  "static"}
-                                          style)}
+                                         style)}
                           attr)
                         table-div]]]])
 
@@ -200,9 +201,9 @@
    {:name :maximum       :required false                             :type "goog.date.UtcDateTime | atom"   :validate-fn goog-date? :description "no selection or navigation after this date"}
    {:name :start-of-week :required false :default 6                  :type "int"                                                    :description "first day of week (Monday = 0 ... Sunday = 6)"}
    {:name :hide-border?  :required false :default false              :type "boolean"                                                :description "when true, the border is not displayed"}
-   {:name :class         :required false                             :type "string"                         :validate-fn string?    :description "CSS class names, space separated"}
-   {:name :style         :required false                             :type "CSS style map"                  :validate-fn css-style? :description "CSS styles to add or override"}
-   {:name :attr          :required false                             :type "HTML attr map"                  :validate-fn html-attr? :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :class         :required false                             :type "string"                         :validate-fn string?    :description "CSS class names, space separated (applies to the outer border div, not the wrapping div)"}
+   {:name :style         :required false                             :type "CSS style map"                  :validate-fn css-style? :description "CSS styles to add or override (applies to the outer border div, not the wrapping div)"}
+   {:name :attr          :required false                             :type "HTML attr map"                  :validate-fn html-attr? :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the outer border div, not the wrapping div)"]}])
 
 (defn datepicker
   [& {:keys [model] :as args}]
@@ -240,7 +241,7 @@
 (defn- anchor-button
   "Provide clickable field with current date label and dropdown button e.g. [ 2014 Sep 17 | # ]"
   [shown? model format]
-  [:div {:class    "input-group display-flex noselect"
+  [:div {:class    "rc-datepicker-dropdown-anchor input-group display-flex noselect"
          :style    (flex-child-style "none")
          :on-click (handler-fn (swap! shown? not))}
    [h-box
@@ -279,6 +280,7 @@
                                     vec
                                     flatten)]
         [popover-anchor-wrapper
+         :class    "rc-datepicker-dropdown-wrapper"
          :showing? shown?
          :position position
          :anchor   [anchor-button shown? model format]

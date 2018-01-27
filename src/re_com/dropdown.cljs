@@ -175,20 +175,20 @@
       (let [_    (reagent/set-state (reagent/current-component) {:filter-box? filter-box?})]
         [(if multi? :ul.chosen-choices :a.chosen-single.chosen-default)
          {:href          "javascript:"   ;; Required to make this anchor appear in the tab order
-          :tab-index     (when tab-index tab-index)
+          :tab-index     tab-index
           :on-click      (handler-fn
                            (if @ignore-click
                              (reset! ignore-click false)
                              (dropdown-click)))
           :on-mouse-down (handler-fn
                            (when @drop-showing?
-                             (reset! ignore-click true)))  ;; TODO: Hmmm, have a look at calling preventDefault (and stopProp?) and removing the ignore-click stuff
+                             (reset! ignore-click true)))   ;; TODO: Hmmm, have a look at calling preventDefault (and stopProp?) and removing the ignore-click stuff
           :on-key-down   (handler-fn
                            (when-not multi?
                              (key-handler event))
                            (when (= (.-which event) 13)  ;; Pressing enter on an anchor also triggers click event, which we don't want
-                             (reset! ignore-click true)))  ;; TODO: Hmmm, have a look at calling preventDefault (and stopProp?) and removing the ignore-click stuff
-          }
+                             (reset! ignore-click true)))}  ;; TODO: Hmmm, have a look at calling preventDefault (and stopProp?) and removing the ignore-click stuff
+
          (if multi?
            (let [make-tag-item (partial tag-item internal-model id-fn label-fn remove-callback ignore-click current-item)
                  make-tags #(map make-tag-item %)]
@@ -206,7 +206,7 @@
             (when (empty? @internal-model) [:span.text-muted placeholder])
             (when multi?
               [filter-text-box-base filter-box? filter-text key-handler drop-showing? #(set-filter-text % regex-filter? true)])]
-           [:div [:b]])])))) ;; This odd bit of markup produces the visual arrow on the right
+           [:div [:b]])]))))
 
 (defn- fn-or-vector-of-maps? ;; Would normally move this to re-com.validate but this is very specific to this component
   [v]
@@ -220,7 +220,7 @@
 (def dropdown-args-desc
   [{:name :choices          :required true                   :type "vector of choices | atom | (opts, done, fail) -> nil" :validate-fn fn-or-vector-of-maps? :description [:span "Each is expected to have an id, label and, optionally, a group, provided by " [:code ":id-fn"] ", " [:code ":label-fn"] " & " [:code ":group-fn"] ". May also be a callback " [:code "(opts, done, fail)"] " where opts is map of " [:code ":filter-text"] " and " [:code ":regex-filter?."]]}
    {:name :model            :required true                   :type "the id of a choice | atom"                                    :description [:span "the id of the selected choice. If nil, " [:code ":placeholder"] " text is shown"]}
-   {:name :on-change        :required true                   :type "id -> nil"                     :validate-fn fn?               :description [:span "called when a new choice is selected. Passed the id of new choice"] }
+   {:name :on-change        :required true                   :type "id -> nil"                     :validate-fn fn?               :description [:span "called when a new choice is selected. Passed the id of new choice"]}
    {:name :id-fn            :required false :default :id     :type "choice -> anything"            :validate-fn ifn?              :description [:span "given an element of " [:code ":choices"] ", returns its unique identifier (aka id)"]}
    {:name :label-fn         :required false :default :label  :type "choice -> string"              :validate-fn ifn?              :description [:span "given an element of " [:code ":choices"] ", returns its displayable label."]}
    {:name :group-fn         :required false :default :group  :type "choice -> anything"            :validate-fn ifn?              :description [:span "given an element of " [:code ":choices"] ", returns its group identifier"]}
@@ -271,6 +271,27 @@
         (swap! choices-state assoc :timer timer))
       (load-choices* choices-state choices text regex-filter?))))
 
+
+(def single-dropdown-args-desc
+  [{:name :choices       :required true                   :type "vector of choices | atom | (opts, done, fail) -> nil" :validate-fn fn-or-vector-of-maps? :description [:span "Each is expected to have an id, label and, optionally, a group, provided by " [:code ":id-fn"] ", " [:code ":label-fn"] " & " [:code ":group-fn"] ". May also be a callback " [:code "(opts, done, fail)"] " where opts is map of " [:code ":filter-text"] " and " [:code ":regex-filter?."]]}
+   {:name :model         :required true                   :type "the id of a choice | atom"                                    :description [:span "the id of the selected choice. If nil, " [:code ":placeholder"] " text is shown"]}
+   {:name :on-change     :required true                   :type "id -> nil"                     :validate-fn fn?               :description [:span "called when a new choice is selected. Passed the id of new choice"]}
+   {:name :id-fn         :required false :default :id     :type "choice -> anything"            :validate-fn ifn?              :description [:span "given an element of " [:code ":choices"] ", returns its unique identifier (aka id)"]}
+   {:name :label-fn      :required false :default :label  :type "choice -> string"              :validate-fn ifn?              :description [:span "given an element of " [:code ":choices"] ", returns its displayable label."]}
+   {:name :group-fn      :required false :default :group  :type "choice -> anything"            :validate-fn ifn?              :description [:span "given an element of " [:code ":choices"] ", returns its group identifier"]}
+   {:name :render-fn     :required false                  :type "choice -> string | hiccup"     :validate-fn ifn?              :description [:span "given an element of " [:code ":choices"] ", returns the markup that will be rendered for that choice. Defaults to the label if no custom markup is required."]}
+   {:name :disabled?     :required false :default false   :type "boolean | atom"                                               :description "if true, no user selection is allowed"}
+   {:name :filter-box?   :required false :default false   :type "boolean"                                                      :description "if true, a filter text field is placed at the top of the dropdown"}
+   {:name :regex-filter? :required false :default false   :type "boolean | atom"                                               :description "if true, the filter text field will support JavaScript regular expressions. If false, just plain text"}
+   {:name :placeholder   :required false                  :type "string"                        :validate-fn string?           :description "background text when no selection"}
+   {:name :title?        :required false :default false   :type "boolean"                                                      :description "if true, allows the title for the selected dropdown to be displayed via a mouse over. Handy when dropdown width is small and text is truncated"}
+   {:name :width         :required false :default "100%"  :type "string"                        :validate-fn string?           :description "the CSS width. e.g.: \"500px\" or \"20em\""}
+   {:name :max-height    :required false :default "240px" :type "string"                        :validate-fn string?           :description "the maximum height of the dropdown part"}
+   {:name :tab-index     :required false                  :type "integer | string"              :validate-fn number-or-string? :description "component's tabindex. A value of -1 removes from order"}
+   {:name :debounce-delay :required false                 :type "integer"                       :validate-fn number?           :description [:span "delay to debounce loading requests when using callback " [:code ":choices"]]}
+   {:name :class         :required false                  :type "string"                        :validate-fn string?           :description "CSS class names, space separated (applies to the outer container)"}
+   {:name :style         :required false                  :type "CSS style map"                 :validate-fn css-style?        :description "CSS styles to add or override (applies to the outer container)"}
+   {:name :attr          :required false                  :type "HTML attr map"                 :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the outer container)"]}])
 
 (defn dropdown
   "Render a dropdown component which emulates the bootstrap-choosen style. Sample choices object:
@@ -404,7 +425,7 @@
                         (when @drop-showing? "chosen-container-active chosen-with-drop ") class)
             :style (merge (flex-child-style (if width "0 0 auto" "auto"))
                           (align-style :align-self :start)
-                          {:width (when width width)}
+                          {:width width}
                           style)}
            attr)          ;; Prevent user text selection
          [dropdown-top internal-model choices id-fn label-fn tab-index placeholder dropdown-click key-handler filter-text remove-callback current-item filter-box? drop-showing? title? multi? set-filter-text regex-filter?]

@@ -12,9 +12,9 @@
    {:name :backdrop-color    :required false :default "black" :type "string"          :validate-fn string?           :description "CSS color of backdrop"}
    {:name :backdrop-opacity  :required false :default 0.6     :type "double | string" :validate-fn number-or-string? :description [:span "opacity of backdrop from:" [:br] "0.0 (transparent) to 1.0 (opaque)"]}
    {:name :backdrop-on-click :required false :default nil     :type "-> nil"          :validate-fn fn?               :description "a function which takes no params and returns nothing. Called when the backdrop is clicked"}
-   {:name :class             :required false                  :type "string"          :validate-fn string?           :description "CSS class names, space separated"}
-   {:name :style             :required false                  :type "CSS style map"   :validate-fn css-style?        :description "CSS styles to add or override"}
-   {:name :attr              :required false                  :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :class             :required false                  :type "string"          :validate-fn string?           :description "CSS class names, space separated (applies to the outer container)"}
+   {:name :style             :required false                  :type "CSS style map"   :validate-fn css-style?        :description "CSS styles to add or override (applies to the outer container)"}
+   {:name :attr              :required false                  :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the outer container)"]}])
 
 (defn modal-panel
   "Renders a modal window centered on screen. A dark transparent backdrop sits between this and the underlying
@@ -36,7 +36,8 @@
                          style)}
           attr)
    [:div    ;; Backdrop
-    {:style    {:position         "fixed"
+    {:class    "rc-modal-panel-backdrop"
+     :style    {:position         "fixed"
                 :width            "100%"
                 :height           "100%"
                 :background-color backdrop-color
@@ -46,7 +47,8 @@
                            (.preventDefault event)
                            (.stopPropagation event))}]
    [:div    ;; Child container
-    {:style (merge {:margin  "auto"
+    {:class    "rc-modal-panel-container"
+     :style (merge {:margin  "auto"
                     :z-index 2}
                    (when wrap-nicely? {:background-color "white"
                                        :padding          "16px"

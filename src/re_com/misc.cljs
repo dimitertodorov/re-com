@@ -4,7 +4,7 @@
             [re-com.popover  :refer [popover-tooltip]]
             [re-com.box      :refer [h-box v-box box gap line flex-child-style align-style]]
             [re-com.validate :refer [input-status-type? input-status-types-list regex? string-or-hiccup? css-style? html-attr?
-                                     number-or-string? string-or-atom? throbber-size? throbber-sizes-list] :refer-macros [validate-args-macro]]
+                                     number-or-string? string-or-atom? nillable-string-or-atom? throbber-size? throbber-sizes-list] :refer-macros [validate-args-macro]]
             [reagent.core    :as    reagent]))
 
 ;; ------------------------------------------------------------------------------------
@@ -12,11 +12,11 @@
 ;; ------------------------------------------------------------------------------------
 
 (def throbber-args-desc
-  [{:name :size :required false :type "keyword" :default :regular :validate-fn throbber-size? :description [:span "one of " throbber-sizes-list]}
-   {:name :color :required false :type "string" :default "#999" :validate-fn string? :description "CSS color"}
-   {:name :class :required false :type "string" :validate-fn string? :description "CSS class names, space separated"}
-   {:name :style :required false :type "CSS style map" :validate-fn css-style? :description "CSS styles to add or override"}
-   {:name :attr :required false :type "HTML attr map" :validate-fn html-attr? :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+  [{:name :size  :required false :default :regular :type "keyword"       :validate-fn throbber-size? :description [:span "one of " throbber-sizes-list]}
+   {:name :color :required false :default "#999"   :type "string"        :validate-fn string?        :description "CSS color"}
+   {:name :class :required false                   :type "string"        :validate-fn string?        :description "CSS class names, space separated (applies to the throbber, not the wrapping div)"}
+   {:name :style :required false                   :type "CSS style map" :validate-fn css-style?     :description "CSS styles to add or override (applies to the throbber, not the wrapping div)"}
+   {:name :attr  :required false                   :type "HTML attr map" :validate-fn html-attr?     :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the throbber, not the wrapping div)"]}])
 
 (defn throbber
   "Render an animated throbber using CSS"
@@ -24,6 +24,7 @@
   {:pre [(validate-args-macro throbber-args-desc args "throbber")]}
   (let [seg (fn [] [:li (when color {:style {:background-color color}})])]
     [box
+     :class "rc-throbber-wrapper"
      :align :start
      :child [:ul
              (merge {:class (str "rc-throbber loader "
@@ -44,22 +45,22 @@
 ;; ------------------------------------------------------------------------------------
 
 (def input-text-args-desc
-  [{:name :model            :required true                   :type "string | atom"    :validate-fn string-or-atom?    :description "text of the input (can be atom or value)"}
-   {:name :on-change        :required true                   :type "string -> nil"    :validate-fn fn?                :description [:span [:code ":change-on-blur?"] " controls when it is called. Passed the current input string"] }
-   {:name :status           :required false                  :type "keyword"          :validate-fn input-status-type? :description [:span "validation status. " [:code "nil/omitted"] " for normal status or one of: " input-status-types-list]}
-   {:name :status-icon?     :required false :default false   :type "boolean"                                          :description [:span "when true, display an icon to match " [:code ":status"] " (no icon for nil)"]}
-   {:name :status-tooltip   :required false                  :type "string"           :validate-fn string?            :description "displayed in status icon's tooltip"}
-   {:name :placeholder      :required false                  :type "string"           :validate-fn string?            :description "background text shown when empty"}
-   {:name :width            :required false :default "250px" :type "string"           :validate-fn string?            :description "standard CSS width setting for this input"}
-   {:name :height           :required false                  :type "string"           :validate-fn string?            :description "standard CSS height setting for this input"}
-   {:name :rows             :required false :default 3       :type "integer | string" :validate-fn number-or-string?  :description "ONLY applies to 'input-textarea': the number of rows of text to show"}
-   {:name :change-on-blur?  :required false :default true    :type "boolean | atom"                                   :description [:span "when true, invoke " [:code ":on-change"] " function on blur, otherwise on every change (character by character)"] }
-   {:name :validation-regex :required false                  :type "regex"            :validate-fn regex?             :description "user input is only accepted if it would result in a string that matches this regular expression"}
-   {:name :disabled?        :required false :default false   :type "boolean | atom"                                   :description "if true, the user can't interact (input anything)"}
-   {:name :class            :required false                  :type "string"           :validate-fn string?            :description "CSS class names, space separated"}
-   {:name :style            :required false                  :type "CSS style map"    :validate-fn css-style?         :description "CSS styles to add or override"}
-   {:name :attr             :required false                  :type "HTML attr map"    :validate-fn html-attr?         :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}
-   {:name :input-type       :required false                  :type "keyword"          :validate-fn keyword?           :description [:span "ONLY applies to super function 'base-input-text': either " [:code ":input"] ", " [:code ":password"] " or " [:code ":textarea"]]}])
+  [{:name :model            :required true                   :type "string/nil | atom" :validate-fn nillable-string-or-atom? :description "text of the input (can be atom or value/nil)"}
+   {:name :on-change        :required true                   :type "string -> nil"     :validate-fn fn?                      :description [:span [:code ":change-on-blur?"] " controls when it is called. Passed the current input string"] }
+   {:name :status           :required false                  :type "keyword"           :validate-fn input-status-type?       :description [:span "validation status. " [:code "nil/omitted"] " for normal status or one of: " input-status-types-list]}
+   {:name :status-icon?     :required false :default false   :type "boolean"                                                 :description [:span "when true, display an icon to match " [:code ":status"] " (no icon for nil)"]}
+   {:name :status-tooltip   :required false                  :type "string"            :validate-fn string?                  :description "displayed in status icon's tooltip"}
+   {:name :placeholder      :required false                  :type "string"            :validate-fn string?                  :description "background text shown when empty"}
+   {:name :width            :required false :default "250px" :type "string"            :validate-fn string?                  :description "standard CSS width setting for this input"}
+   {:name :height           :required false                  :type "string"            :validate-fn string?                  :description "standard CSS height setting for this input"}
+   {:name :rows             :required false :default 3       :type "integer | string"  :validate-fn number-or-string?        :description "ONLY applies to 'input-textarea': the number of rows of text to show"}
+   {:name :change-on-blur?  :required false :default true    :type "boolean | atom"                                          :description [:span "when true, invoke " [:code ":on-change"] " function on blur, otherwise on every change (character by character)"] }
+   {:name :validation-regex :required false                  :type "regex"             :validate-fn regex?                   :description "user input is only accepted if it would result in a string that matches this regular expression"}
+   {:name :disabled?        :required false :default false   :type "boolean | atom"                                          :description "if true, the user can't interact (input anything)"}
+   {:name :class            :required false                  :type "string"            :validate-fn string?                  :description "CSS class names, space separated (applies to the textbox, not the wrapping div)"}
+   {:name :style            :required false                  :type "CSS style map"     :validate-fn css-style?               :description "CSS styles to add or override (applies to the textbox, not the wrapping div)"}
+   {:name :attr             :required false                  :type "HTML attr map"     :validate-fn html-attr?               :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the textbox, not the wrapping div)"]}
+   {:name :input-type       :required false                  :type "keyword"           :validate-fn keyword?                 :description [:span "ONLY applies to super function 'base-input-text': either " [:code ":input"] ", " [:code ":password"] " or " [:code ":textarea"]]}])
 
 ;; Sample regex's:
 ;;  - #"^(-{0,1})(\d*)$"                   ;; Signed integer
@@ -87,9 +88,9 @@
           (reset! external-model latest-ext-model)
           (reset! internal-model latest-ext-model))
         [h-box
+         :class    "rc-input-text "
          :align    :start
          :width    (if width width "250px")
-         :class    "rc-input-text "
          :children [[:div
                      {:class (str "rc-input-text-inner "          ;; form-group
                                   (case status
@@ -136,9 +137,7 @@
                                           (case (.-which event)
                                             13 (when on-change (on-change @internal-model))
                                             27 (reset! internal-model @external-model)
-                                            true)))
-
-                         }
+                                            true)))}
                         attr)]]
                     (when (and status-icon? status)
                       (let [icon-class (case status :success "zmdi-check-circle" :warning "zmdi-alert-triangle" :error "zmdi-alert-circle zmdi-spinner" :validating "zmdi-hc-spin zmdi-rotate-right zmdi-spinner")]
@@ -202,15 +201,16 @@
    {:name :on-change   :required true                 :type "boolean -> nil"   :validate-fn fn?               :description "called when the checkbox is clicked. Passed the new value of the checkbox"}
    {:name :label       :required false                :type "string | hiccup"  :validate-fn string-or-hiccup? :description "the label shown to the right"}
    {:name :disabled?   :required false :default false :type "boolean | atom"                                  :description "if true, user interaction is disabled"}
-   {:name :style       :required false                :type "CSS style map"    :validate-fn css-style?        :description "the CSS style style map"}
-   {:name :label-style :required false                :type "CSS style map"    :validate-fn css-style?        :description "the CSS class applied overall to the component"}
-   {:name :label-class :required false                :type "string"           :validate-fn string?           :description "the CSS class applied to the label"}
-   {:name :attr        :required false                :type "HTML attr map"    :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :label-class :required false                :type "string"           :validate-fn string?           :description "CSS class names (applies to the label)"}
+   {:name :label-style :required false                :type "CSS style map"    :validate-fn css-style?        :description "CSS style map (applies to the label)"}
+   {:name :class       :required false                :type "string"           :validate-fn string?           :description "CSS class names, space separated (applies to the checkbox, not the wrapping div)"}
+   {:name :style       :required false                :type "CSS style map"    :validate-fn css-style?        :description "CSS style map (applies to the checkbox, not the wrapping div)"}
+   {:name :attr        :required false                :type "HTML attr map"    :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the checkbox, not the wrapping div)"]}])
 
 ;; TODO: when disabled?, should the text appear "disabled".
 (defn checkbox
   "I return the markup for a checkbox, with an optional RHS label"
-  [& {:keys [model on-change label disabled? style label-style label-class attr]
+  [& {:keys [model on-change label disabled? label-class label-style class style attr]
       :as   args}]
   {:pre [(validate-args-macro checkbox-args-desc args "checkbox")]}
   (let [cursor      "default"
@@ -219,11 +219,11 @@
         callback-fn #(when (and on-change (not disabled?))
                       (on-change (not model)))]  ;; call on-change with either true or false
     [h-box
+     :class    "rc-checkbox-wrapper noselect"
      :align    :start
-     :class    "noselect"
      :children [[:input
                  (merge
-                   {:class     "rc-checkbox"
+                   {:class     (str "rc-checkbox " class)
                     :type      "checkbox"
                     :style     (merge (flex-child-style "none")
                                       {:cursor cursor}
@@ -234,12 +234,12 @@
                    attr)]
                 (when label
                   [:span
-                   {:on-click (handler-fn (callback-fn))
-                    :class    label-class
+                   {:class    label-class
                     :style    (merge (flex-child-style "none")
                                      {:padding-left "8px"
                                       :cursor       cursor}
-                                     label-style)}
+                                     label-style)
+                    :on-click (handler-fn (callback-fn))}
                    label])]]))
 
 
@@ -248,19 +248,20 @@
 ;; ------------------------------------------------------------------------------------
 
 (def radio-button-args-desc
-  [{:name :model       :required true                 :type "anything | atom"                                  :description [:span "selected value of the radio button group. See also " [:code ":value"]] }
-   {:name :value       :required false                :type "anything"                                         :description [:span "if " [:code ":model"]  " equals " [:code ":value"] " then this radio button is selected"] }
-   {:name :on-change   :required true                 :type "anything -> nil"   :validate-fn fn?               :description [:span "called when the radio button is clicked. Passed " [:code ":value"]]}
-   {:name :label       :required false                :type "string | hiccup"   :validate-fn string-or-hiccup? :description "the label shown to the right"}
-   {:name :disabled?   :required false :default false :type "boolean | atom"                                   :description "if true, the user can't click the radio button"}
-   {:name :style       :required false                :type "CSS style map"     :validate-fn css-style?        :description "radio button style map"}
-   {:name :label-style :required false                :type "CSS style map"     :validate-fn css-style?        :description "the CSS class applied overall to the component"}
-   {:name :label-class :required false                :type "string"            :validate-fn string?           :description "the CSS class applied to the label"}
-   {:name :attr        :required false                :type "HTML attr map"     :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+  [{:name :model       :required true                 :type "anything | atom"                                 :description [:span "selected value of the radio button group. See also " [:code ":value"]] }
+   {:name :value       :required false                :type "anything"                                        :description [:span "if " [:code ":model"]  " equals " [:code ":value"] " then this radio button is selected"] }
+   {:name :on-change   :required true                 :type "anything -> nil"  :validate-fn fn?               :description [:span "called when the radio button is clicked. Passed " [:code ":value"]]}
+   {:name :label       :required false                :type "string | hiccup"  :validate-fn string-or-hiccup? :description "the label shown to the right"}
+   {:name :disabled?   :required false :default false :type "boolean | atom"                                  :description "if true, the user can't click the radio button"}
+   {:name :label-class :required false                :type "string"           :validate-fn string?           :description "CSS class names (applies to the label)"}
+   {:name :label-style :required false                :type "CSS style map"    :validate-fn css-style?        :description "CSS style map (applies to the label)"}
+   {:name :class       :required false                :type "string"           :validate-fn string?           :description "CSS class names, space separated (applies to the radio-button, not the wrapping div)"}
+   {:name :style       :required false                :type "CSS style map"    :validate-fn css-style?        :description "CSS style map (applies to the radio-button, not the wrapping div)"}
+   {:name :attr        :required false                :type "HTML attr map"    :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the radio-button, not the wrapping div)"]}])
 
 (defn radio-button
   "I return the markup for a radio button, with an optional RHS label"
-  [& {:keys [model value on-change label disabled? style label-style label-class attr]
+  [& {:keys [model value on-change label disabled? label-class label-style class style attr]
       :as   args}]
   {:pre [(validate-args-macro radio-button-args-desc args "radio-button")]}
   (let [cursor      "default"
@@ -269,28 +270,28 @@
         callback-fn #(when (and on-change (not disabled?))
                       (on-change value))]  ;; call on-change with the :value arg
     [h-box
+     :class    "rc-radio-button-wrapper noselect"
      :align    :start
-     :class    "noselect"
      :children [[:input
                  (merge
-                   {:class     "rc-radio-button"
-                    :type      "radio"
+                   {:class     (str "rc-radio-button " class)
                     :style     (merge
                                  (flex-child-style "none")
                                  {:cursor cursor}
                                  style)
+                    :type      "radio"
                     :disabled  disabled?
                     :checked   (= model value)
                     :on-change (handler-fn (callback-fn))}
                    attr)]
                 (when label
                   [:span
-                   {:on-click (handler-fn (callback-fn))
-                    :class    label-class
+                   {:class    label-class
                     :style    (merge (flex-child-style "none")
                                      {:padding-left "8px"
                                       :cursor       cursor}
-                                     label-style)}
+                                     label-style)
+                    :on-click (handler-fn (callback-fn))}
                    label])]]))
 
 
@@ -306,9 +307,9 @@
    {:name :step      :required false :default 1       :type "double | string | atom" :validate-fn number-or-string? :description "step value between min and max"}
    {:name :width     :required false :default "400px" :type "string"                 :validate-fn string?           :description "standard CSS width setting for the slider"}
    {:name :disabled? :required false :default false   :type "boolean | atom"                                        :description "if true, the user can't change the slider"}
-   {:name :class     :required false                  :type "string"                 :validate-fn string?           :description "CSS class names, space separated"}
-   {:name :style     :required false                  :type "CSS style map"          :validate-fn css-style?        :description "CSS styles to add or override"}
-   {:name :attr      :required false                  :type "HTML attr map"          :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :class     :required false                  :type "string"                 :validate-fn string?           :description "CSS class names, space separated (applies to the slider, not the wrapping div)"}
+   {:name :style     :required false                  :type "CSS style map"          :validate-fn css-style?        :description "CSS styles to add or override (applies to the slider, not the wrapping div)"}
+   {:name :attr      :required false                  :type "HTML attr map"          :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the slider, not the wrapping div)"]}])
 
 (defn slider
   "Returns markup for an HTML5 slider input"
@@ -322,6 +323,7 @@
         step      (deref-or-value step)
         disabled? (deref-or-value disabled?)]
     [box
+     :class "rc-slider-wrapper"
      :align :start
      :child [:input
              (merge
@@ -349,13 +351,13 @@
 ;; ------------------------------------------------------------------------------------
 
 (def progress-bar-args-desc
-  [{:name :model     :required true  :type "double | string | atom"                 :validate-fn number-or-string? :description "current value of the slider. A number between 0 and 100"}
-   {:name :width     :required false :type "string"                 :default "100%" :validate-fn string?           :description "a CSS width"}
-   {:name :striped?  :required false :type "boolean"                :default false                                 :description "when true, the progress section is a set of animated stripes"}
-   {:name :class     :required false :type "string"                                 :validate-fn string?           :description "CSS class names, space separated"}
-   {:name :bar-class :required false :type "string"                                 :validate-fn string?           :description "CSS class name(s) for the actual progress bar itself, space separated"}
-   {:name :style     :required false :type "CSS style map"                          :validate-fn css-style?        :description "CSS styles to add or override"}
-   {:name :attr      :required false :type "HTML attr map"                          :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+  [{:name :model     :required true                  :type "double | string | atom" :validate-fn number-or-string? :description "current value of the slider. A number between 0 and 100"}
+   {:name :width     :required false :default "100%" :type "string"                 :validate-fn string?           :description "a CSS width"}
+   {:name :striped?  :required false :default false  :type "boolean"                                               :description "when true, the progress section is a set of animated stripes"}
+   {:name :bar-class :required false                 :type "string"                 :validate-fn string?           :description "CSS class name(s) for the actual progress bar itself, space separated"}
+   {:name :class     :required false                 :type "string"                 :validate-fn string?           :description "CSS class names, space separated (applies to the progress-bar, not the wrapping div)"}
+   {:name :style     :required false                 :type "CSS style map"          :validate-fn css-style?        :description "CSS styles to add or override (applies to the progress-bar, not the wrapping div)"}
+   {:name :attr      :required false                 :type "HTML attr map"          :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the progress-bar, not the wrapping div)"]}])
 
 (defn progress-bar
   "Render a bootstrap styled progress bar"
@@ -365,6 +367,7 @@
   {:pre [(validate-args-macro progress-bar-args-desc args "progress-bar")]}
   (let [model (deref-or-value model)]
     [box
+     :class "rc-progress-bar-wrapper"
      :align :start
      :child [:div
              (merge

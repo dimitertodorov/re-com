@@ -134,12 +134,12 @@
 
 (defn left-side-nav-bar
   [selected-tab-id on-select-tab]
-    [v-box
-     :class    "noselect"
-     :style    {:background-color "#fcfcfc"}
+  [v-box
+   :class    "noselect"
+   :style    {:background-color "#fcfcfc"}
      ;:size    "1"
-     :children (for [tab tabs-definition]
-                 [nav-item tab selected-tab-id on-select-tab])])
+   :children (for [tab tabs-definition]
+               [nav-item tab selected-tab-id on-select-tab])])
 
 
 (defn re-com-title-box

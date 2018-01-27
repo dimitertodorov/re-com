@@ -17,9 +17,9 @@
    {:name :tooltip          :required false                        :type "string | hiccup" :validate-fn string-or-hiccup? :description "what to show in the tooltip"}
    {:name :tooltip-position :required false :default :below-center :type "keyword"         :validate-fn position?         :description [:span "relative to this anchor. One of " position-options-list]}
    {:name :disabled?        :required false :default false         :type "boolean | atom"                                 :description "if true, the user can't click the button"}
-   {:name :class            :required false                        :type "string"          :validate-fn string?           :description "CSS class names, space separated"}
-   {:name :style            :required false                        :type "CSS style map"   :validate-fn css-style?        :description "CSS styles"}
-   {:name :attr             :required false                        :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :class            :required false                        :type "string"          :validate-fn string?           :description "CSS class names, space separated (applies to the button, not the wrapping div)"}
+   {:name :style            :required false                        :type "CSS style map"   :validate-fn css-style?        :description "CSS styles (applies to the button, not the wrapping div)"}
+   {:name :attr             :required false                        :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the button, not the wrapping div)"]}])
 
 (defn button
   "Returns the markup for a basic button"
@@ -50,7 +50,7 @@
         (when disabled?
           (reset! showing? false))
         [box
-         :class "display-inline-flex"
+         :class "rc-button-wrapper display-inline-flex"
          :align :start
          :child (if tooltip
                   [popover-tooltip
@@ -73,9 +73,9 @@
    {:name :tooltip-position :required false :default :below-center :type "keyword"         :validate-fn position?         :description [:span "relative to this anchor. One of " position-options-list]}
    {:name :emphasise?       :required false :default false         :type "boolean"                                        :description "if true, use emphasised styling so the button really stands out"}
    {:name :disabled?        :required false :default false         :type "boolean"                                        :description "if true, the user can't click the button"}
-   {:name :class            :required false                        :type "string"          :validate-fn string?           :description "CSS class names, space separated"}
-   {:name :style            :required false                        :type "CSS style map"   :validate-fn css-style?        :description "CSS styles to add or override"}
-   {:name :attr             :required false                        :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :class            :required false                        :type "string"          :validate-fn string?           :description "CSS class names, space separated (applies to the button, not the wrapping div)"}
+   {:name :style            :required false                        :type "CSS style map"   :validate-fn css-style?        :description "CSS styles to add or override (applies to the button, not the wrapping div)"}
+   {:name :attr             :required false                        :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the button, not the wrapping div)"]}])
 
 (defn md-circle-icon-button
   "a circular button containing a material design icon"
@@ -110,7 +110,7 @@
                           attr)
                         [:i {:class (str "zmdi zmdi-hc-fw-rc " md-icon-name)}]]]
         [box
-         :class "display-inline-flex"
+         :class "rc-md-circle-icon-button-wrapper display-inline-flex"
          :align :start
          :child (if tooltip
                   [popover-tooltip
@@ -133,9 +133,9 @@
    {:name :tooltip-position :required false :default :below-center :type "keyword"         :validate-fn position?         :description [:span "relative to this anchor. One of " position-options-list]}
    {:name :emphasise?       :required false :default false         :type "boolean"                                        :description "if true, use emphasised styling so the button really stands out"}
    {:name :disabled?        :required false :default false         :type "boolean"                                        :description "if true, the user can't click the button"}
-   {:name :class            :required false                        :type "string"          :validate-fn string?           :description "CSS class names, space separated"}
-   {:name :style            :required false                        :type "CSS style map"   :validate-fn css-style?        :description "CSS styles to add or override"}
-   {:name :attr             :required false                        :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :class            :required false                        :type "string"          :validate-fn string?           :description "CSS class names, space separated (applies to the button, not the wrapping div)"}
+   {:name :style            :required false                        :type "CSS style map"   :validate-fn css-style?        :description "CSS styles to add or override (applies to the button, not the wrapping div)"}
+   {:name :attr             :required false                        :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the button, not the wrapping div)"]}])
 
 (defn md-icon-button
   "a square button containing a material design icon"
@@ -170,7 +170,7 @@
                           attr)
                         [:i {:class (str "zmdi zmdi-hc-fw-rc " md-icon-name)}]]]
         [box
-         :class "display-inline-flex"
+         :class "rc-md-icon-button-wrapper display-inline-flex"
          :align :start
          :child (if tooltip
                   [popover-tooltip
@@ -189,9 +189,9 @@
   [{:name :info     :required true                        :type "string | hiccup" :validate-fn string-or-hiccup? :description "what's shown in the popover"}
    {:name :position :required false :default :right-below :type "keyword"         :validate-fn position?         :description [:span "relative to this anchor. One of " position-options-list]}
    {:name :width    :required false :default "250px"      :type "string"          :validate-fn string?           :description "width in px"}
-   {:name :class    :required false                       :type "string"          :validate-fn string?           :description "CSS class names, space separated"}
-   {:name :style    :required false                       :type "CSS style map"   :validate-fn css-style?        :description "CSS styles to add or override"}
-   {:name :attr     :required false                       :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :class    :required false                       :type "string"          :validate-fn string?           :description "CSS class names, space separated (applies to the button, not the popover wrapper)"}
+   {:name :style    :required false                       :type "CSS style map"   :validate-fn css-style?        :description "CSS styles to add or override (applies to the button, not the popover wrapper)"}
+   {:name :attr     :required false                       :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the button, not the popover wrapper)"]}])
 
 (defn info-button
   "A tiny light grey button, with an 'i' in it. Meant to be unobrusive.
@@ -233,9 +233,9 @@
    {:name :tooltip          :required false                        :type "string | hiccup" :validate-fn string-or-hiccup? :description "what to show in the tooltip"}
    {:name :tooltip-position :required false :default :below-center :type "keyword"         :validate-fn position?         :description [:span "relative to this anchor. One of " position-options-list]}
    {:name :disabled?        :required false :default false         :type "boolean"                                        :description "if true, the user can't click the button"}
-   {:name :class            :required false                        :type "string"          :validate-fn string?           :description "CSS class names, space separated"}
-   {:name :style            :required false                        :type "CSS style map"   :validate-fn css-style?        :description "CSS styles to add or override"}
-   {:name :attr             :required false                        :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :class            :required false                        :type "string"          :validate-fn string?           :description "CSS class names, space separated (applies to the button, not the wrapping div)"}
+   {:name :style            :required false                        :type "CSS style map"   :validate-fn css-style?        :description "CSS styles to add or override (applies to the button, not the wrapping div)"}
+   {:name :attr             :required false                        :type "HTML attr map"   :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the button, not the wrapping div)"]}])
 
 (defn row-button
   "a small button containing a material design icon"
@@ -264,7 +264,7 @@
                           attr)
                         [:i {:class (str "zmdi zmdi-hc-fw-rc " md-icon-name)}]]]
         [box
-         :class "display-inline-flex"
+         :class "rc-row-button-wrapper display-inline-flex"
          :align :start
          :child (if tooltip
                   [popover-tooltip
@@ -285,9 +285,9 @@
    {:name :tooltip          :required false                        :type "string | hiccup"        :validate-fn string-or-hiccup? :description "what to show in the tooltip"}
    {:name :tooltip-position :required false :default :below-center :type "keyword"                :validate-fn position?         :description [:span "relative to this anchor. One of " position-options-list]}
    {:name :disabled?        :required false :default false         :type "boolean | atom"                                        :description "if true, the user can't click the button"}
-   {:name :class            :required false                        :type "string"                 :validate-fn string?           :description "CSS class names, space separated"}
-   {:name :style            :required false                        :type "CSS style map"          :validate-fn css-style?        :description "CSS styles to add or override"}
-   {:name :attr             :required false                        :type "HTML attr map"          :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :class            :required false                        :type "string"                 :validate-fn string?           :description "CSS class names, space separated (applies to the hyperlink, not the wrapping div)"}
+   {:name :style            :required false                        :type "CSS style map"          :validate-fn css-style?        :description "CSS styles to add or override (applies to the hyperlink, not the wrapping div)"}
+   {:name :attr             :required false                        :type "HTML attr map"          :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the hyperlink, not the wrapping div)"]}])
 
 (defn hyperlink
   "Renders an underlined text hyperlink component.
@@ -320,7 +320,7 @@
                                   attr)
                                 label]]]
         [box
-         :class "display-inline-flex"
+         :class "rc-hyperlink-wrapper display-inline-flex"
          :align :start
          :child (if tooltip
                   [popover-tooltip
@@ -341,9 +341,9 @@
    {:name :target           :required false :default "_self"       :type "string | atom"          :validate-fn string-or-atom?   :description "one of \"_self\" or \"_blank\""}
    {:name :tooltip          :required false                        :type "string | hiccup"        :validate-fn string-or-hiccup? :description "what to show in the tooltip"}
    {:name :tooltip-position :required false :default :below-center :type "keyword"                :validate-fn position?         :description [:span "relative to this anchor. One of " position-options-list]}
-   {:name :class            :required false                        :type "string"                 :validate-fn string?           :description "CSS class names, space separated"}
-   {:name :style            :required false                        :type "CSS style map"          :validate-fn css-style?        :description "CSS styles to add or override"}
-   {:name :attr             :required false                        :type "HTML attr map"          :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed"]}])
+   {:name :class            :required false                        :type "string"                 :validate-fn string?           :description "CSS class names, space separated (applies to the hyperlink, not the wrapping div)"}
+   {:name :style            :required false                        :type "CSS style map"          :validate-fn css-style?        :description "CSS styles to add or override (applies to the hyperlink, not the wrapping div)"}
+   {:name :attr             :required false                        :type "HTML attr map"          :validate-fn html-attr?        :description [:span "HTML attributes, like " [:code ":on-mouse-move"] [:br] "No " [:code ":class"] " or " [:code ":style"] "allowed (applies to the hyperlink, not the wrapping div)"]}])
 
 (defn hyperlink-href
   "Renders an underlined text hyperlink component.
@@ -371,7 +371,7 @@
                         label]]
 
         [box
-         :class "display-inline-flex"
+         :class "rc-hyperlink-href-wrapper display-inline-flex"
          :align :start
          :child (if tooltip
                   [popover-tooltip

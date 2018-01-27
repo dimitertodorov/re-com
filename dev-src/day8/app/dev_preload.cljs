@@ -1,6 +1,6 @@
 (ns day8.app.dev-preload
 
-"Specify this ns in development profiles :preload where you want
+ "Specify this ns in development profiles :preload where you want
 
    devtools and dirac like \"dev\" and \"test\"
    Example:
